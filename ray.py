@@ -1,7 +1,7 @@
 '''
 Created on 2011/02/09
 
-@author: 0000136102
+@author: Kentaro Doba
 '''
 from vectors import vector3
 from objects import face, sphere
@@ -16,13 +16,13 @@ class ray(vector3):
     def __init__(self, ppnt, pdir):
         self.point = ppnt
         self.direction = vector3.nrm_vec(pdir)
-    
+
     def reflect(self, face, normal):
         self.point = self.intersection(face)
         '''  calc direction '''
         tmp_vec = vector3.mul_vec(normal, 2*vector3.dot_vec(self.direction, normal))
         self.direction = vector3.sub_vec(self.direction, tmp_vec)
-    
+
     def intersection (self, obj):
         k = 0.0
         if obj.radius > 0.0: #sphere
@@ -42,7 +42,7 @@ class ray(vector3):
                 k = 1.0e8
         if k<0 : k = 1.0e8
         return vector3.mul_vec(self.direction, k)
-    
+
     def checkInter(self, objlist):
         min_length = 1.0e8
         min_object = face(vector3(0.0,0.0,0.0), vector3(0.0,0.0,0.0), 0)
@@ -53,7 +53,7 @@ class ray(vector3):
                 min_object = element
         i_point = vector3.add_vec(self.point, vector3.mul_vec(self.direction, min_length))
         return i_point, min_object
-    
+
     def checkShadow(self, start, light, objlist):
         occluded = 0
         o2light = vector3.nrm_vec(vector3.sub_vec(light.point, start))
@@ -65,11 +65,12 @@ class ray(vector3):
             if vector3.norm(dest) < min_length :
                 occluded = 1
         return occluded
-    
+
+    ##  public func  ##
     def calcColor(self, light, objlist):
         dest, i_obj = self.checkInter(objlist)
         occluded = self.checkShadow(dest, light, objlist)
-        
+
         light2dest = vector3.nrm_vec(vector3.sub_vec(dest, light.point))
         if i_obj.radius > 0.0 :
             obj_normal = vector3.nrm_vec(vector3.sub_vec(dest,i_obj.point))
@@ -77,7 +78,7 @@ class ray(vector3):
             obj_normal = i_obj.normal
         shading = -vector3.dot_vec(light2dest, obj_normal)
         if shading < 0.2 : shading = 0.2
-        
+
         d_color = i_obj.color
         d_red = d_color & 255
         d_grn = (d_color>>8) & 255
@@ -85,7 +86,7 @@ class ray(vector3):
         d_red *= shading
         d_grn *= shading
         d_blu *= shading
-        
+
         if occluded > 0 :
             penalty = 128
             if d_red >= penalty : d_red -= penalty
@@ -98,8 +99,3 @@ class ray(vector3):
         d_grn = int(d_grn)
         d_blu = int(d_blu)
         return (int(d_red) + (int(d_grn)<<8) + (int(d_blu)<<16))
-        
-        
-            
-            
-            
